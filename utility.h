@@ -32,7 +32,7 @@ namespace iedb {
     static constexpr int status_not_access  = 4;
     static constexpr int status_io_error = 5;
     static constexpr int status_argument_overflow = 6;
-
+    static constexpr int status_invalid_wal_page = 7;
 
     static constexpr char wal_magic_string[16] = "iedb wal file";
     static constexpr char wal_index_magic_string[16] = "iedb wal index";

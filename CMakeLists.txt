@@ -7,4 +7,7 @@ add_executable(wal main.cpp
         wal.cpp
         wal.h
         os.cpp
-        os.h)
+        os.h
+        test_wal.h
+        test.h
+)

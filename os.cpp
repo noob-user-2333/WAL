@@ -7,7 +7,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <sys/mman.h>
 namespace iedb {
     const int os::open_mode_read = O_RDONLY;
     const int os::open_mode_write = O_WRONLY;
@@ -19,7 +19,9 @@ namespace iedb {
     const int os::access_mode_can_read = R_OK;
     const int os::access_mode_can_write = W_OK;
     const int os::access_mode_can_execute = X_OK;
-
+    const int os::seek_mode_set = SEEK_SET;
+    const int os::seek_mode_current = SEEK_CUR;
+    const int os::seek_mode_end = SEEK_END;
 
     static int errno_to_status_code(const int error_number) {
         switch (error_number) {
@@ -57,6 +59,13 @@ namespace iedb {
         return status_ok;
     }
 
+    int os::seek(int fd, int64 offset, int mode,int64& out_current_offset) {
+        auto _offset = lseek(fd, offset, mode);
+        if (_offset == -1)
+            return errno_to_status_code(errno);
+        out_current_offset = _offset;
+        return status_ok;
+    }
 
 
     int os::close(int fd) {
@@ -133,6 +142,30 @@ namespace iedb {
         if (::fstat(fd, &st) < 0)
             return errno_to_status_code(errno);
         out_size = st.st_size;
+        return status_ok;
+    }
+
+    // int os::mmap(int fd, int64 offset, uint64 length, void *&out_start) {
+    //     out_start = ::mmap(nullptr,length,PROT_READ | PROT_WRITE,MAP_SHARED,fd,offset);
+    //     if (out_start == ((void*)(-1)))
+    //         return errno_to_status_code(errno);
+    //     return status_ok;
+    // }
+    // int os::munmap(void *start, uint64 length) {
+    //     int status = ::munmap(start,length);
+    //     if (status != status_ok)
+    //         return errno_to_status_code(errno);
+    //     return status_ok;
+    // }
+
+    int os::ftruncate(int fd, int64 length) {
+        int status, error = 0;
+        do {
+            status = ::ftruncate(fd,length);
+            error = errno;
+        }while (status != status_ok && error == EINTR);
+        if (status != status_ok)
+            return errno_to_status_code(error);
         return status_ok;
     }
 
